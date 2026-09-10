@@ -1,0 +1,51 @@
+name: Build NODOC APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk \
+            autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev \
+            automake autopoint gettext
+
+      - name: Install Buildozer
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install git+https://github.com/kivy/buildozer
+          python -m pip install legacy-cgi setuptools cython==0.29.34
+
+      - name: Prepare Buildozer
+        run: |
+          sed -i 's/^p4a.branch = .*/p4a.branch = master/' buildozer.spec
+          sed -i 's/^android.api = .*/android.api = 36/' buildozer.spec
+
+      - name: Build APK
+        run: |
+          yes | buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NODOC-APK
+          path: bin/*.apk
