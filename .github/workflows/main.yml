@@ -19,8 +19,9 @@ jobs:
           docker pull kivy/buildozer:latest
           docker run --rm \
             -v "$PWD":/home/user/hostcwd \
+            --entrypoint /bin/bash \
             kivy/buildozer:latest \
-            android debug
+            -c "yes | buildozer android debug"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
