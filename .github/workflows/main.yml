@@ -8,22 +8,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build APK with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          workdir: .
-          buildozer_version: stable
-          command: buildozer android debug
+      - name: Build APK
+        run: |
+          docker pull kivy/buildozer:latest
+          docker run --rm \
+            -v "$PWD":/home/user/hostcwd \
+            kivy/buildozer:latest \
+            android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NODOC-APK
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
